@@ -1,0 +1,18 @@
+---
+# defaults file for level27tech.aws_nacl
+
+aws_nacl_region: us-east-1
+aws_nacl_aws_secret_key: MySecretKeyABC123
+aws_nacl_aws_access_key: MyAccessKeyABC123
+
+aws_nacl_name: acl-network-access
+aws_nacl_vpc_name: my-vpc
+aws_nacl_purge_subnets: True
+aws_nacl_purge_ingress_rules: True
+aws_nacl_purge_egress_rules: True
+aws_nacl_subnets: []
+aws_nacl_ingress_rules: []
+aws_nacl_egress_rules: []
+aws_nacl_tags:
+aws_nacl_project: MyProject
+aws_nacl_state: present

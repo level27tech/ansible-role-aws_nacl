@@ -1,0 +1,79 @@
+---
+# tasks file for level27tech.aws_nacl
+- name: Get VPC information
+  ec2_vpc_net_facts:
+    region:           "{{ aws_nacl_region }}"
+    aws_access_key:   "{{ aws_nacl_aws_access_key }}"
+    aws_secret_key:   "{{ aws_nacl_aws_secret_key }}"
+    filters:
+      "tag:Name": "{{ aws_nacl_vpc_name }}"
+  register: reg_existing_vpc
+
+- name: Create/update Network ACL
+  block:
+  - set_fact:
+      vpc_id: "{{ reg_existing_vpc.vpcs.0.id }}"
+
+  - ec2_vpc_nacl_facts:
+      region:           "{{ aws_nacl_region }}"
+      aws_access_key:   "{{ aws_nacl_aws_access_key }}"
+      aws_secret_key:   "{{ aws_nacl_aws_secret_key }}"
+      filters:
+        "tag:Name": "{{ aws_nacl_name }}"
+        "vpc-id": "{{ vpc_id }}"
+    register: reg_existing_nacl
+
+  - set_fact:
+      existing_subnets: "{{ reg_existing_nacl.nacls.0.subnets }}"
+      existing_ingress: "{{ reg_existing_nacl.nacls.0.ingress }}"
+      existing_egress: "{{ reg_existing_nacl.nacls.0.egress }}"
+    when: reg_existing_nacl.nacls
+
+  - set_fact:
+      subnets: "{{ existing_subnets | default([]) }} + {{ aws_nacl_subnets }}"    
+    when: aws_nacl_purge_subnets == False
+     and  aws_nacl_state == "present"
+
+  - set_fact:
+      ingress_rules: "{{ existing_ingress | default([]) }} + {{ aws_nacl_ingress_rules }}"
+    when: aws_nacl_purge_ingress_rules == False
+     and  aws_nacl_state == "present"
+
+  - set_fact:
+      egress_rules: "{{ existing_egress | default([]) }} + {{ aws_nacl_egress_rules }}"
+    when: aws_nacl_purge_egress_rules == False
+     and  aws_nacl_state == "present"
+
+  - ec2_vpc_nacl:
+      region:           "{{ aws_nacl_region }}"
+      aws_access_key:   "{{ aws_nacl_aws_access_key }}"
+      aws_secret_key:   "{{ aws_nacl_aws_secret_key }}"
+      state:            "{{ aws_nacl_state }}"
+      vpc_id:           "{{ vpc_id }}"
+      name:             "{{ aws_nacl_name }}"
+      subnets: "{{ subnets }}"
+      ingress: "{{ ingress_rules }}"
+      egress: "{{ egress_rules }}"
+      tags:
+        Name: "{{ aws_nacl_name }}"
+        Project: "{{ aws_nacl_project }}"
+
+  when: aws_nacl_state == "present"
+   and  reg_existing_vpc.vpcs
+
+- name: Delete Network ACL
+  block:
+  - set_fact:
+      vpc_id: "{{ reg_existing_vpc.vpcs.0.id }}"
+
+  - ec2_vpc_nacl:
+      region:           "{{ aws_nacl_region }}"
+      aws_access_key:   "{{ aws_nacl_aws_access_key }}"
+      aws_secret_key:   "{{ aws_nacl_aws_secret_key }}"
+      state:            "{{ aws_nacl_state }}"
+      vpc_id:           "{{ vpc_id }}"
+      name:             "{{ aws_nacl_name }}"
+  when: aws_nacl_state == "absent"
+   and  reg_existing_vpc.vpcs
+
+

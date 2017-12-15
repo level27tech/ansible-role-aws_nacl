@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DeleteTags",
+                "ec2:DescribeTags",
+                "ec2:DescribeVpcs",
+                "ec2:CreateTags",
+                "ec2:CreateNetworkAcl",
+                "ec2:DescribeNetworkAcls",
+                "ec2:CreateNetworkAclEntry",
+                "ec2:DeleteNetworkAcl",
+                "ec2:DeleteNetworkAclEntry"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
